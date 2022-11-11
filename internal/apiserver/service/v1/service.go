@@ -6,7 +6,7 @@ package v1
 
 import "iam-based-app/internal/apiserver/store"
 
-//go:generate mockgen -self_package=github.com/marmotedu/iam/internal/apiserver/service/v1 -destination mock_service.go -package v1 github.com/marmotedu/iam/internal/apiserver/service/v1 Service,UserSrv,SecretSrv,PolicySrv
+//go:generate mockgen -self_package=iam-based-app/internal/apiserver/service/v1 -destination mock_service.go -package v1 iam-based-app/internal/apiserver/service/v1 Service,UserSrv
 
 // Service defines functions used to return resource interface.
 type Service interface {

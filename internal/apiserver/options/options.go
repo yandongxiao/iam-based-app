@@ -7,11 +7,9 @@ package options
 
 import (
 	cliflag "github.com/marmotedu/component-base/pkg/cli/flag"
-	"github.com/marmotedu/component-base/pkg/json"
 	"github.com/marmotedu/iam/pkg/log"
 
 	genericoptions "iam-based-app/internal/pkg/options"
-	"iam-based-app/internal/pkg/server"
 )
 
 // Options runs an iam api server.
@@ -34,11 +32,6 @@ func NewOptions() *Options {
 	return &o
 }
 
-// ApplyTo applies the run options to the method receiver and returns self.
-func (o *Options) ApplyTo(c *server.Config) error {
-	return nil
-}
-
 // Flags returns flags for a specific APIServer by section name.
 func (o *Options) Flags() (fss cliflag.NamedFlagSets) {
 	o.GenericServerRunOptions.AddFlags(fss.FlagSet("generic"))
@@ -47,12 +40,6 @@ func (o *Options) Flags() (fss cliflag.NamedFlagSets) {
 	o.Log.AddFlags(fss.FlagSet("logs"))
 
 	return fss
-}
-
-func (o *Options) String() string {
-	data, _ := json.Marshal(o)
-
-	return string(data)
 }
 
 // Complete set default Options.
