@@ -19,8 +19,9 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 	"golang.org/x/sync/errgroup"
 
-	"iam-based-app/internal/pkg/middleware"
 	"github.com/marmotedu/iam/pkg/log"
+
+	"iam-based-app/internal/pkg/middleware"
 )
 
 // GenericAPIServer contains state for an iam api server.
@@ -43,7 +44,7 @@ type GenericAPIServer struct {
 	enableProfiling bool
 	// wrapper for gin.Engine
 
-	insecureServer, secureServer *http.Server
+	insecureServer *http.Server
 }
 
 func initGenericAPIServer(s *GenericAPIServer) {
@@ -130,15 +131,6 @@ func (s *GenericAPIServer) Run() error {
 
 	}
 
-	// For scalability, use custom HTTP configuration mode here
-	s.secureServer = &http.Server{
-		Addr:    s.SecureServingInfo.Address(),
-		Handler: s,
-		// ReadTimeout:    10 * time.Second,
-		// WriteTimeout:   10 * time.Second,
-		// MaxHeaderBytes: 1 << 20,
-	}
-
 	var eg errgroup.Group
 
 	// Initializing the server in a goroutine so that
@@ -153,25 +145,6 @@ func (s *GenericAPIServer) Run() error {
 		}
 
 		log.Infof("Server on %s stopped", s.InsecureServingInfo.Address)
-
-		return nil
-	})
-
-	eg.Go(func() error {
-		key, cert := s.SecureServingInfo.CertKey.KeyFile, s.SecureServingInfo.CertKey.CertFile
-		if cert == "" || key == "" || s.SecureServingInfo.BindPort == 0 {
-			return nil
-		}
-
-		log.Infof("Start to listening the incoming requests on https address: %s", s.SecureServingInfo.Address())
-
-		if err := s.secureServer.ListenAndServeTLS(cert, key); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal(err.Error())
-
-			return err
-		}
-
-		log.Infof("Server on %s stopped", s.SecureServingInfo.Address())
 
 		return nil
 	})
@@ -198,10 +171,6 @@ func (s *GenericAPIServer) Close() {
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	if err := s.secureServer.Shutdown(ctx); err != nil {
-		log.Warnf("Shutdown secure server failed: %s", err.Error())
-	}
 
 	if err := s.insecureServer.Shutdown(ctx); err != nil {
 		log.Warnf("Shutdown insecure server failed: %s", err.Error())
